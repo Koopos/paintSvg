@@ -1,0 +1,12 @@
+@charset "UTF-8";
+
+:root {
+    --width: 800px;
+    --height: calc(var(--width) * 0.618);
+}
+
+#paint {
+    border: 2px solid #eee;
+    width: var(--width);
+    height: var(--height);
+}
