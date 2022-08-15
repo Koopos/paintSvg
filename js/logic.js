@@ -1,13 +1,10 @@
 function initStage(layer, stage) {
-
-    stage.clear()
-
     const cellWidth = 10
     const cellInnerWidth = cellWidth * 0.8
     const cellPadding = (cellWidth - cellInnerWidth) / 2
 
-    const columns = 800/ cellWidth;
-    const rows = 618 / cellWidth;
+    const columns = 600/ cellWidth;
+    const rows = 600 / cellWidth;
 
     for(let i = 0; i < columns; i++) {
         for(let j = 0; j < rows; j++) {
@@ -24,37 +21,45 @@ function initStage(layer, stage) {
             layer.add(box)
         }
     }
-}
 
-function initOperationArea() {
-    var stage = new Konva.Stage({
-        container: "operations",
-        width: 200,
-        height: 618,
+    var svgText = new Konva.Text({
+        x: 660,
+        y: 100,
+        text: "生成svg",
+        fontSize: 30,
+        fill: "black"
     })
-    
-    var layer = new Konva.Layer();
-    stage.add(layer);
 
     var clearText = new Konva.Text({
-        x: 40,
-        y: 30,
+        x: 660,
+        y: 50,
         text: "Clear",
         fontSize: 30,
         fill: "green"
     })
 
-    layer.add(clearText);
-
-    clearText.on("click", function(e) {
-        
+    
+    clearText.on("click", function(e) { 
+        lineCache.forEach(v=>{
+            v.destroy()
+        })
     })
+
+    svgText.on('click', () => {
+        generateSvg()
+    })
+
+    layer.add(clearText);
+    layer.add(svgText);
+
 }
+
+let lineCache = []
 
 function initLifeCycle(layer, stage) {
     const dom = document.querySelector('#container');
 
-    const clearButton = document.querySelector('#clear')
+    // const clearButton = document.querySelector('#clear')
 
     let isPaint = false
 
@@ -76,6 +81,7 @@ function initLifeCycle(layer, stage) {
 
     stage.on('mouseup touchend', () => {
         isPaint = false
+        lineCache.push(lastLine)
     })
 
     stage.on('mousemove touchmove',(e) => {
@@ -90,38 +96,26 @@ function initLifeCycle(layer, stage) {
 
         lastLine.points(newPoints)
     })
+}
 
-    // dom.addEventListener('mousedown', (e) => {
-    //     isPaint = true
-    // })
+function generateSvg() {
+    let str= "<svg version=\"1.1\" viewBox=\"0 0 600 600\" xmlns=\"http://www.w3.org/2000/svg\">"
+    lineCache.forEach(line=>{
+        const v= line.points()
+        let d=`M ${v[0]} ${v[1]}`
 
-    // dom.addEventListener('mouseup',(e) => {
-    //     isPaint = false
-    //     prevPoint = {}
-    // })
+        for(let i = 2;i<v.length;i+=2) {
+            d+=` L ${v[i]} ${v[i+1]}`
+        }
 
-    // dom.addEventListener('mousemove', (e)=> {
-    //     if(isPaint) {
-    //         if(!prevPoint.x) {
-    //             prevPoint = {
-    //                 x: e.clientX,
-    //                 y: e.clientY
-    //             }
-    //         }
-    //         var line = new Konva.Line({
-    //             radius: 3,
-    //             stroke: "black",
-    //             strokeWidth: 4,
-    //             lineJoin: "round",
-    //             points: [prevPoint.x, prevPoint.y, e.clientX, e.clientY],
-    //         })
-    //         layer.add(line)
-    //         prevPoint.x = e.clientX
-    //         prevPoint.y =e.clientY
-    //     }
-    // })
-
-    clearButton.addEventListener("click",() => {
-        initStage(layer, stage);
+        let path = `<path stroke="black" fill="none" d="${d} Z">`
+        path+="</path>"
+        str+=path
     })
+    
+    str+="</svg>"
+    
+    var container = document.querySelector('#svg')
+    container.innerHTML=str
+    return str
 }

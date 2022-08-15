@@ -10,3 +10,10 @@
     width: var(--width);
     height: var(--height);
 }
+
+#svg {
+    float: right;
+    height: 100px;
+    width: 100px;
+    border: 2px solid #fe0;
+}
